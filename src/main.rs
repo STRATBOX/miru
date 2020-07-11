@@ -1,3 +1,5 @@
+mod config;
+
 use actix_web::middleware::{Compress, Logger};
 use actix_web::{web, App, HttpServer, Responder};
 
@@ -8,11 +10,9 @@ use chrono::Utc;
 use dotenv::dotenv;
 use listenfd::ListenFd;
 use serde::{Deserialize, Serialize};
-use std::io;
 use ulid::Ulid;
 
 // use module dependencies
-mod config;
 use crate::config::Config;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -33,8 +33,10 @@ async fn index() -> impl Responder {
 }
 
 #[actix_rt::main]
-async fn main() -> io::Result<()> {
+async fn main() -> Result<()> {
     dotenv().ok();
+
+    
     
     let config = Config::from_env()
             .expect("Server configuration error");
@@ -53,5 +55,7 @@ async fn main() -> io::Result<()> {
         None => server.bind(format!("{}:{}", config.host, config.port))?,
     };
 
-    server.run().await
+    server.run().await?;
+
+    Ok(())
 }
