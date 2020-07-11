@@ -1,11 +1,19 @@
 use actix_web::middleware::{Compress, Logger};
 use actix_web::{web, App, HttpServer, Responder};
+
+use color_eyre::Result;
+
 use chrono::Utc;
+
 use dotenv::dotenv;
 use listenfd::ListenFd;
 use serde::{Deserialize, Serialize};
-use std::{env, io};
+use std::io;
 use ulid::Ulid;
+
+// use module dependencies
+mod config;
+use crate::config::Config;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Ping {
@@ -15,10 +23,9 @@ struct Ping {
 }
 
 async fn index() -> impl Responder {
-    let msg = env::var("SERVICE").expect("SERVICE not set");
     let p = Ping {
         id: Ulid::new().to_string().to_lowercase(),
-        msg,
+        msg: String::from("miru"),
         ts: Utc::now().timestamp_millis(),
     };
 
@@ -28,8 +35,9 @@ async fn index() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
     dotenv().ok();
-    let host = env::var("HOST").expect("HOST not set");
-    let port = env::var("PORT").expect("PORT not set");
+    
+    let config = Config::from_env()
+            .expect("Server configuration error");
 
     let mut listenfd = ListenFd::from_env();
 
@@ -42,7 +50,7 @@ async fn main() -> io::Result<()> {
 
     server = match listenfd.take_tcp_listener(0)? {
         Some(listener) => server.listen(listener)?,
-        None => server.bind(format!("{}:{}", host, port))?,
+        None => server.bind(format!("{}:{}", config.host, config.port))?,
     };
 
     server.run().await
