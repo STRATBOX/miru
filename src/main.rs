@@ -1,42 +1,22 @@
-mod config;
-
+// dependencies
 use actix_web::middleware::{Compress, Logger};
-use actix_web::{web, App, HttpServer, Responder};
-
+use actix_web::{web, App, HttpServer};
 use color_eyre::Result;
-
-use chrono::Utc;
-
 use dotenv::dotenv;
 use listenfd::ListenFd;
-use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+
+// module definitions
+mod config;
+mod api;
+mod models;
 
 // use module dependencies
 use crate::config::Config;
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Ping {
-    id: String,
-    msg: String,
-    ts: i64,
-}
-
-async fn index() -> impl Responder {
-    let p = Ping {
-        id: Ulid::new().to_string().to_lowercase(),
-        msg: String::from("miru"),
-        ts: Utc::now().timestamp_millis(),
-    };
-
-    web::Json(p)
-}
+use crate::api::index;
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
     dotenv().ok();
-
-    
     
     let config = Config::from_env()
             .expect("Server configuration error");

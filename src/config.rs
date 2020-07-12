@@ -1,9 +1,9 @@
 use color_eyre::Result;
 use eyre::WrapErr;
 use serde::{Deserialize, Serialize};
+use dotenv::dotenv;
 use tracing::{info, instrument};
 use tracing_subscriber::EnvFilter;
-use dotenv::dotenv;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
