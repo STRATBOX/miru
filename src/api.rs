@@ -4,7 +4,7 @@ use ulid::Ulid;
 
 use crate::models::Ping;
 
-pub async fn index() -> impl Responder {
+pub async fn ping() -> impl Responder {
     web::Json(Ping {
         id: Ulid::new().to_string().to_lowercase(),
         msg: String::from("miru"),
