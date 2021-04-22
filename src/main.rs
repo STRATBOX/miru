@@ -10,7 +10,7 @@ use miru::run;
 #[actix_web::main]
 async fn main() -> Result<()> {
     dotenv().ok();
-    
+
     run().await?;
 
     Ok(())

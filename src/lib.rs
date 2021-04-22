@@ -4,17 +4,16 @@ use actix_web::{web, App, HttpServer};
 use listenfd::ListenFd;
 
 // module definitions
-mod config;
 mod api;
 mod models;
+mod settings;
 
 // use module dependencies
-use crate::config::Config;
 use crate::api::ping;
+use crate::settings::Settings;
 
 pub async fn run() -> std::io::Result<()> {
-    let config = Config::from_env()
-            .expect("Server configuration error");
+    let config = Settings::from_env().expect("Server configuration error");
 
     let mut listenfd = ListenFd::from_env();
 

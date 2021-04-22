@@ -1,20 +1,21 @@
 use color_eyre::Result;
+use config::{Config, Environment};
+use dotenv::dotenv;
 use eyre::WrapErr;
 use serde::{Deserialize, Serialize};
-use dotenv::dotenv;
 use tracing::{info, instrument};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Serialize, Deserialize)]
-pub struct Config {
+pub struct Settings {
     pub host: String,
     pub port: i32,
-    pub service: String
+    pub service: String,
 }
 
-impl Config {
+impl Settings {
     #[instrument]
-    pub fn from_env() -> Result<Config> {
+    pub fn from_env() -> Result<Settings> {
         dotenv().ok();
 
         tracing_subscriber::fmt()
@@ -23,9 +24,8 @@ impl Config {
 
         info!("Loading configuration");
 
-        let mut c = config::Config::new();
-        c.merge(config::Environment::default())?;
-        c.try_into()
-            .context("loading config from environment")
+        let mut c = Config::new();
+        c.merge(Environment::default())?;
+        c.try_into().context("loading config from environment")
     }
 }
