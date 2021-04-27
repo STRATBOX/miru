@@ -1,6 +1,7 @@
 // dependencies
 use color_eyre::Result;
 use dotenv::dotenv;
+use std::net::TcpListener;
 
 // module definitions
 
@@ -11,7 +12,15 @@ use miru::run;
 async fn main() -> Result<()> {
     dotenv().ok();
 
-    run()?.await?;
+    // Get app config settings
+    let config = miru::get_config();
+
+    // bind TCP listener to specified socket address
+    let listener = TcpListener::bind(format!("{}:{}", config.host, config.port))
+        .expect("Failed to bind random port");
+
+    // Run server
+    run(listener)?.await?;
 
     Ok(())
 }
