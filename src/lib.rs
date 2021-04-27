@@ -1,7 +1,7 @@
 // dependencies
 use actix_web::middleware::{Compress, Logger};
 use actix_web::{web, App, HttpServer};
-use listenfd::ListenFd;
+use actix_web::dev::Server;
 
 // module definitions
 mod api;
@@ -12,22 +12,17 @@ mod settings;
 use crate::api::ping;
 use crate::settings::Settings;
 
-pub async fn run() -> std::io::Result<()> {
+pub fn run() -> Result<Server, std::io::Error> {
     let config = Settings::from_env().expect("Server configuration error");
 
-    let mut listenfd = ListenFd::from_env();
-
-    let mut server = HttpServer::new(|| {
+    let server = HttpServer::new(|| {
         App::new()
             .wrap(Compress::default())
             .wrap(Logger::default())
             .route("/", web::get().to(ping))
-    });
+    })
+    .bind(format!("{}:{}", config.host, config.port))?
+    .run();
 
-    server = match listenfd.take_tcp_listener(0)? {
-        Some(listener) => server.listen(listener)?,
-        None => server.bind(format!("{}:{}", config.host, config.port))?,
-    };
-
-    server.run().await
+    Ok(server)
 }

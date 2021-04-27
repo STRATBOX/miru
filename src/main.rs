@@ -11,7 +11,7 @@ use miru::run;
 async fn main() -> Result<()> {
     dotenv().ok();
 
-    run().await?;
+    run()?.await?;
 
     Ok(())
 }

@@ -1,16 +1,17 @@
-use tracing::info;
 #[actix_rt::test]
 async fn test_ping_endpoint() {
     // arrange
-    spawn_app().await.expect("Failed to spawn our app");
+    spawn_app();
 
     let client = reqwest::Client::new();
 
     let response = client
-        .get("http://127.0.0.1:0")
+        .get("http://127.0.0.1:3002")
         .send()
         .await
         .expect("Failed to execute request");
+
+        println!("made it here");
 
     // assert
     assert!(response.status().is_success());
@@ -18,7 +19,7 @@ async fn test_ping_endpoint() {
 }
 
 // Launch the application in background
-async fn spawn_app() -> std::io::Result<()> {
-    info!("spawning application");
-    miru::run().await
+fn spawn_app() {
+    let server =  miru::run().expect("Failed to bind address");
+    let _ = tokio::spawn(server);
 }
