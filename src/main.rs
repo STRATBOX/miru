@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
     let config = get_configuration();
 
     // setup tracing subscriber
-    let subscriber = get_subscriber("miru".into(), "info".into());
+    let subscriber = get_subscriber("miru".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
 
     // bind TCP listener to specified socket address
