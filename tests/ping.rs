@@ -26,13 +26,13 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 });
 
 // Launch the application in background
-fn spawn_app() -> String {
-    // Get app config settings
-    let config = get_configuration();
-
+async fn spawn_app() -> String {
     // The first time `initialize` is invoked the code in `TRACING` is executed.
     // All other invocations will instead skip execution.
     Lazy::force(&TRACING);
+
+    // Get app config settings
+    let config = get_configuration();
 
     // create test host on port 0 - allow system to pick port
     let test_host = format!("{}:{}", &config.host[..], "0");
@@ -49,11 +49,8 @@ fn spawn_app() -> String {
 
 #[actix_rt::test]
 async fn test_ping_endpoint() {
-    // arrange
-    spawn_app();
-
     // Arrange
-    let address = spawn_app();
+    let address = spawn_app().await;
     let client = reqwest::Client::new();
 
     let response = client
