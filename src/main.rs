@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
     let config = get_configuration();
 
     // bind TCP listener to specified socket address
-    let listener = TcpListener::bind(format!("{}:{}", config.host, config.port))
+    let listener = TcpListener::bind(format!("{}:{}", config.app.host, config.app.port))
         .expect("Failed to bind random port");
 
     // Run server

@@ -35,7 +35,7 @@ async fn spawn_app() -> String {
     let config = get_configuration();
 
     // create test host on port 0 - allow system to pick port
-    let test_host = format!("{}:{}", &config.host[..], "0");
+    let test_host = format!("{}:{}", &config.app.host[..], "0");
     let listener = TcpListener::bind(test_host).expect("Failed to bind random port");
 
     // get the random assigned port
@@ -44,7 +44,7 @@ async fn spawn_app() -> String {
     let _ = tokio::spawn(server);
 
     // Return the application address to the caller!
-    format!("http://{}:{}", config.host, port)
+    format!("http://{}:{}", config.app.host, port)
 }
 
 #[actix_rt::test]
