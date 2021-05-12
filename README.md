@@ -1,4 +1,4 @@
-# H A I K U
+# M I R U
 
 Rust microservices skeleton + integration tests + telemetry
 
