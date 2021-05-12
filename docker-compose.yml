@@ -1,0 +1,10 @@
+version: '3.7'
+volumes:
+  datastore:
+services:
+  miru:
+    build: .
+    ports:
+      - 3002:3002
+    volumes:
+      - $PWD/.env:/.env

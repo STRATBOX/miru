@@ -1,23 +1,32 @@
-# Build stage
-FROM rust:latest As builder
+FROM lukemathwalker/cargo-chef as planner
+WORKDIR app
+COPY . .
+# Compute a lock-like file for our project
+RUN cargo chef prepare  --recipe-path recipe.json
 
-WORKDIR /usr/src
+FROM lukemathwalker/cargo-chef as cacher
+WORKDIR app
+COPY --from=planner /app/recipe.json recipe.json
+# Build our project dependencies, not our application!
+RUN cargo chef cook --release --recipe-path recipe.json
 
-# Download the target for static linking.
-RUN rustup target add x86_64-unknown-linux-musl
+FROM rust:1.50 AS builder
+WORKDIR app
+# Copy over the cached dependencies
+COPY --from=cacher /app/target target
+COPY --from=cacher /usr/local/cargo /usr/local/cargo
+COPY . .
+# Build our application, leveraging the cached deps!
+RUN cargo build --release --bin miru
 
-# Create project and build app dependencies
-RUN USER=root cargo new app
-WORKDIR /usr/src/app
-COPY Cargo.toml Cargo.lock ./
-RUN cargo build --release
-
-# Copy src files
-COPY src ./src
-RUN cargo install --target x86_64-unknown-linux-musl --path .
-
-# Bundle stage
-FROM scratch
-COPY --from=builder /usr/local/cargo/bin/app .
-USER 1000
-CMD ["./app", "-a", "0.0.0.0", "-p", "3000"]
+FROM debian:buster-slim AS runtime
+WORKDIR app
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends openssl \
+    # Clean up
+    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/miru miru
+COPY app.yaml .
+# ENV APP_ENVIRONMENT production
+EXPOSE 3002
+ENTRYPOINT ["./miru"]
