@@ -1,6 +1,6 @@
 # H A I K U
 
-Rust microservices, jwt, mongodb and cloudrun
+Rust microservices skeleton + integration tests + telemetry
 
 ## Running the service as an image
 
@@ -22,22 +22,22 @@ $ autocannon -c 100 -d 5 -p 10 http://0.0.0.0:3002
 Running 5s test @ http://0.0.0.0:3002
 100 connections with 10 pipelining factor
 
-┌─────────┬──────┬──────┬────────┬────────┬─────────┬──────────┬───────────┐
-│ Stat    │ 2.5% │ 50%  │ 97.5%  │ 99%    │ Avg     │ Stdev    │ Max       │
-├─────────┼──────┼──────┼────────┼────────┼─────────┼──────────┼───────────┤
-│ Latency │ 0 ms │ 0 ms │ 119 ms │ 146 ms │ 9.92 ms │ 31.65 ms │ 247.82 ms │
-└─────────┴──────┴──────┴────────┴────────┴─────────┴──────────┴───────────┘
-┌───────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
-│ Stat      │ 1%      │ 2.5%    │ 50%     │ 97.5%   │ Avg     │ Stdev   │ Min     │
-├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
-│ Req/Sec   │ 8163    │ 8163    │ 10391   │ 11183   │ 9898    │ 1129.36 │ 8160    │
-├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
-│ Bytes/Sec │ 1.78 MB │ 1.78 MB │ 2.27 MB │ 2.44 MB │ 2.16 MB │ 246 kB  │ 1.78 MB │
-└───────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+┌─────────┬──────┬──────┬────────┬────────┬──────────┬──────────┬───────────┐
+│ Stat    │ 2.5% │ 50%  │ 97.5%  │ 99%    │ Avg      │ Stdev    │ Max       │
+├─────────┼──────┼──────┼────────┼────────┼──────────┼──────────┼───────────┤
+│ Latency │ 0 ms │ 0 ms │ 320 ms │ 361 ms │ 27.74 ms │ 86.25 ms │ 565.66 ms │
+└─────────┴──────┴──────┴────────┴────────┴──────────┴──────────┴───────────┘
+┌───────────┬────────┬────────┬────────┬────────┬────────┬─────────┬────────┐
+│ Stat      │ 1%     │ 2.5%   │ 50%    │ 97.5%  │ Avg    │ Stdev   │ Min    │
+├───────────┼────────┼────────┼────────┼────────┼────────┼─────────┼────────┤
+│ Req/Sec   │ 3261   │ 3261   │ 3481   │ 3711   │ 3499   │ 162.29  │ 3260   │
+├───────────┼────────┼────────┼────────┼────────┼────────┼─────────┼────────┤
+│ Bytes/Sec │ 571 kB │ 571 kB │ 609 kB │ 650 kB │ 612 kB │ 28.4 kB │ 571 kB │
+└───────────┴────────┴────────┴────────┴────────┴────────┴─────────┴────────┘
 
 Req/Bytes counts sampled once per second.
 
-49k requests in 5.07s, 10.8 MB read
+17k requests in 5.06s, 3.06 MB read
 ```
 
 ## auto reloading while building locally
@@ -50,36 +50,42 @@ $ cargo install cargo-watch
 
 ```rust
 // src/main.rs
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
-use listenfd::ListenFd;
+// dependencies
+use color_eyre::Result;
+use std::net::TcpListener;
 
-#[get("/")]
-async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
+// module definitions
 
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
-    let mut listenfd = ListenFd::from_env();
-    let mut server = HttpServer::new(||
-        App::new()
-            .service(index)
-    );
+// use module dependencies
+use miru::configuration::get_configuration;
+use miru::startup::run;
+use miru::telemetry::{get_subscriber, init_subscriber};
 
-    server = match listenfd.take_tcp_listener(0)? {
-        Some(listener) => server.listen(listener)?,
-        None => server.bind("127.0.0.1:3000")?,
-    };
+#[actix_web::main]
+async fn main() -> Result<()> {
+    
+    // setup tracing subscriber
+    let subscriber = get_subscriber("miru".into(), "info".into(), std::io::stdout);
+    init_subscriber(subscriber);
 
-    server.run().await
+    // Get app config settings
+    let config = get_configuration();
+
+    // bind TCP listener to specified socket address
+    let listener = TcpListener::bind(format!("{}:{}", config.app.host, config.app.port))
+        .expect("Failed to bind random port");
+
+    // Run server
+    run(listener)?.await?;
+
+    Ok(())
 }
 ```
 
 ### links
+* [Zero to Production - Are we observable yet?](https://www.lpalmieri.com/posts/2020-09-27-zero-to-production-4-are-we-observable-yet/)
 * [Mongodb client](https://github.com/mongodb/mongo-rust-driver)
 * [Apache pulsar client](https://github.com/wyyerd/pulsar-rs)
-* [Build an API in Rust with JWT Authentication](https://auth0.com/blog/build-an-api-in-rust-with-jwt-authentication-using-actix-web/)
-* [How to create a REST API in rust](https://cloudmaker.dev/how-to-create-a-rest-api-in-rust/)
 * [Rust fullstack](https://github.com/steadylearner/Rust-Full-Stack)
-* [Building a microservice with rust](https://medium.com/@ilegra/building-a-microservice-with-rust-ef9641cf2331)
 * [The Rust Programming Language - 2018 Edition](https://doc.rust-lang.org/book/2018-edition/index.html)
+
