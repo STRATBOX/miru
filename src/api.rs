@@ -9,7 +9,8 @@ use crate::models::Ping;
 pub async fn ping() -> impl Responder {
     web::Json(Ping {
         id: Ulid::new().to_string().to_lowercase(),
-        msg: String::from("miru"),
+        msg: env!("CARGO_PKG_NAME").to_string(),
+        version: env!("CARGO_PKG_VERSION").to_string(),
         ts: Utc::now().timestamp_millis(),
     })
 }
