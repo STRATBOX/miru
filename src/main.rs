@@ -11,7 +11,6 @@ use miru::telemetry::{get_subscriber, init_subscriber};
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    
     // let app_name = concat!(env!("CARGO_PKG_NAME"), "-", env!("CARGO_PKG_VERSION")).to_string();
     let app_name = env!("CARGO_PKG_NAME").to_string();
 

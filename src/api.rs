@@ -3,7 +3,7 @@ use chrono::Utc;
 use tracing::instrument;
 use ulid::Ulid;
 
-use crate::models::Ping;
+use crate::domain::ping::Ping;
 
 #[instrument]
 pub async fn ping() -> impl Responder {

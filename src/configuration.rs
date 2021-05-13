@@ -7,7 +7,7 @@ use tracing::{info, instrument};
 
 #[derive(Serialize, Deserialize)]
 pub struct Configuration {
-    pub app: AppSettings
+    pub app: AppSettings,
 }
 #[derive(Serialize, Deserialize)]
 pub struct AppSettings {
