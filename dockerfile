@@ -10,7 +10,7 @@ COPY --from=planner /app/recipe.json recipe.json
 # Build our project dependencies, not our application!
 RUN cargo chef cook --release --recipe-path recipe.json
 
-FROM rust:1.50 AS builder
+FROM rust:1.50 as builder
 WORKDIR app
 # Copy over the cached dependencies
 COPY --from=cacher /app/target target
@@ -19,12 +19,8 @@ COPY . .
 # Build our application, leveraging the cached deps!
 RUN cargo build --release --bin miru
 
-FROM debian:buster-slim AS runtime
+FROM gcr.io/distroless/cc-debian10 as runtime
 WORKDIR app
-RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends openssl \
-    # Clean up
-    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/miru miru
 COPY app.yaml .
 # ENV APP_ENVIRONMENT production
