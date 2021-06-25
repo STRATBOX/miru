@@ -99,24 +99,23 @@ jobs:
           echo [github.sha]: ${{ github.sha }}
           echo [github.ref]: ${{ github.ref }}
           echo [github.sha]: ${{ github.sha }}
-          echo [project_id]: ${{ secrets.GCP_SA_KEY }}
           export [container]=`$ORG/$IMAGE`
+
       - name: Checkout
         uses: actions/checkout@v2
-
       # Setup gcloud CLI
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ secrets.GCP_PROJECT }}
-
       # Configure docker to use the gcloud command-line tool as a credential helper
       - run: |
           # Set up docker to authenticate
           # via gcloud command-line tool.
           gcloud auth configure-docker
-      # Build the Docker image
+      
+          # Build the Docker image
       # images name in format - [ORG]/[IMAGE] e.g. roava.io/myimage
       - name: Build
         id: build
