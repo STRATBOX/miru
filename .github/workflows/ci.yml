@@ -122,7 +122,7 @@ jobs:
           export CONTAINER=`echo $ORG/$IMAGE`
           docker build -t "$REGISTRY_HOSTNAME"/"$CONTAINER":"$TAG" \
           -t "$REGISTRY_HOSTNAME"/"$CONTAINER":"${GITHUB_SHA::8}" \
-          -t "$REGISTRY_HOSTNAME"/"$CONTAINER":"$GITHUB_SHA"
+          -t "$REGISTRY_HOSTNAME"/"$CONTAINER":"$GITHUB_SHA" .
       # Push the Docker image to Google Container Registry
       # images name in format - [ORG]/[IMAGE] e.g. roava.io/myimage
       # docker push "$REGISTRY_HOSTNAME"/"$CONTAINER":"$GITHUB_SHA"
