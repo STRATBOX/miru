@@ -115,5 +115,5 @@ jobs:
           export TAG=`echo ${{ steps.get_version.outputs.VERSION }}`
           export CONTAINER=`echo $ORG/$IMAGE`
           docker push "$REGISTRY_HOSTNAME"/"$CONTAINER":"$TAG"
-          docker tag "$REGISTRY_HOSTNAME"/"$CONTAINER":"$TAG" "$REGISTRY_HOSTNAME"/"$IMAGE":latest
+          docker tag "$REGISTRY_HOSTNAME"/"$CONTAINER":"$TAG" "$REGISTRY_HOSTNAME"/"$CONTAINER":latest
           docker push "$REGISTRY_HOSTNAME"/"$CONTAINER":latest
